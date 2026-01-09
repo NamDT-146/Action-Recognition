@@ -1,0 +1,51 @@
+# Configuration for TSM model on Hand Gestures dataset
+
+# Experiment settings
+experiment_name: hand_gestures_tsm
+save_dir: ./checkpoints
+save_name: tsm_hand_gestures
+resume: False
+load_path: ./checkpoints/tsm_hand_gestures/latest_model.pth
+mlflow_timeout: 5
+
+# Training settings
+epochs: 100
+batch_size: 8
+num_workers: 2
+seed: 42
+gpu: 1
+
+# Dataset settings
+data_dir: /home/atin-ct3/action_recognition/data
+dataset: hand-gestures
+gesture_filter: null
+set_filter: null
+train_split: 0.7
+val_split: 0.15
+img_size: 224
+seq_length: 8  # TSM typically uses 8 or 16 segments
+crop_dark: null
+
+# Model settings
+model_name: TSN  # TSM is implemented as TSN with temporal shift
+num_class: 5
+num_segments: 8
+modality: RGB
+base_model: mobilenetv2  # mobilenet_v2, resnet50, resnet101
+consensus_type: avg
+dropout: 0.5
+
+# Optimizer settings
+optimizer: sgd
+lr: 0.001
+weight_decay: 0.0001
+momentum: 0.9
+clip_gradient: 20.0
+
+# Scheduler settings
+scheduler: step
+scheduler_step_size: 25
+scheduler_gamma: 0.1
+
+# Loss settings
+loss_type: crossentropy

@@ -1,0 +1,49 @@
+# Configuration for TimeSformer model on Human 7 Action dataset
+
+# Experiment settings
+experiment_name: timesformer_human_7_action
+save_dir: ./checkpoints
+save_name: timesformer_human_7_action
+resume: True
+load_path: ./checkpoints/timesformer_human_7_action/latest_model.pth
+mlflow_timeout: 5
+
+# Training settings
+epochs: 100
+batch_size: 32  # TimeSformer requires more memory
+num_workers: 4
+seed: 42
+gpu: 1
+
+# Dataset settings
+data_dir: /home/atin-ct3/action_recognition/data
+dataset: human7action
+train_split: 0.7
+val_split: 0.15
+num_frames: 8  # Number of frames for TimeSformer
+
+# Model settings
+model_name: TimeSformer
+pretrained_model: facebook/timesformer-base-finetuned-k400
+num_classes: 7
+dropout: 0.3
+freeze_backbone: True  # Freeze backbone during warmup
+
+# Fine-tuning settings
+num_layers_to_freeze: 0  # Not used for TimeSformer (use freeze_backbone instead)
+warmup_epochs: 5  # Number of epochs with frozen backbone
+reset_optimizer_after_warmup: True  # Reset optimizer after unfreezing
+
+# Optimizer settings
+optimizer: adamw
+lr: 0.00001  # Lower learning rate for fine-tuning
+weight_decay: 0.01
+clip_gradient: 1.0
+
+# Scheduler settings
+scheduler: cosine
+scheduler_step_size: 10
+scheduler_gamma: 0.1
+
+# Loss settings
+loss_type: crossentropy

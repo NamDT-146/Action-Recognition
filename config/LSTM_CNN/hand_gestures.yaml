@@ -1,0 +1,58 @@
+# Configuration for LSTM_CNN model on Hand Gestures dataset
+
+# Experiment settings
+experiment_name: hand_gestures_recognition
+save_dir: ./checkpoints
+save_name: lstm_cnn_hand_gestures
+resume: False
+load_path: ./checkpoints/lstm_cnn_hand_gestures/latest_model.pth
+mlflow_timeout: 5
+
+# Training settings
+epochs: 100
+batch_size: 8
+num_workers: 0
+seed: 42
+gpu: 1
+
+# Dataset settings
+data_dir: /home/atin-ct3/action_recognition/data
+dataset: hand-gestures
+gesture_filter: null  # null for all gestures, or ['one', 'four', 'small', 'fist', 'me']
+set_filter: null  # null for all sets, or [0, 1, 2, ...] for specific sets
+train_split: 0.7
+val_split: 0.15
+img_size: 112
+seq_length: 20
+crop_dark: null
+
+# Model settings
+model_name: LSTM_CNN
+seq_len: 20
+cnn_arch: resnet50  # resnet50, resnet18, efficientnet_b0, vgg19
+pretrained: True
+freeze_cnn: True
+pretrained_coco: False
+temporal_model: convlstm  # convlstm or lstm
+hidden_dim: 256
+num_layers: 3
+kernel_size: 3
+num_classes: 5  # 5 gestures
+dropout: 0.3
+bidirectional: False
+weight_init: xavier_uniform
+
+# Optimizer settings
+optimizer: adam  # adam, adamw, sgd, rmsprop
+lr: 0.0001
+weight_decay: 0.0001
+momentum: 0.9
+clip_gradient: 1.0
+
+# Scheduler settings
+scheduler: step  # step, cosine, none
+scheduler_step_size: 20
+scheduler_gamma: 0.5
+
+# Loss settings
+loss_type: crossentropy  # bce, bce_logits, crossentropy

@@ -1,0 +1,56 @@
+# Configuration for TSM model on Hand Gestures dataset
+
+# Experiment settings
+experiment_name: lstm_human_7_action
+save_dir: ./checkpoints
+save_name: lstm_human_7_action
+resume: False
+load_path: ./checkpoints/lstm_human_7_action/latest_model.pth
+mlflow_timeout: 5
+
+# Training settings
+epochs: 100
+batch_size: 8
+num_workers: 4
+seed: 42
+gpu: 1
+
+# Dataset settings
+data_dir: /home/atin-ct3/action_recognition/data
+dataset: human7action
+train_split: 0.7
+val_split: 0.15
+img_size: 224
+seq_length: 8  # TSM typically uses 8 or 16 segments
+crop_dark: null
+
+# Model settings
+model_name: LSTM_CNN
+seq_len: 20
+cnn_arch: resnet50  # resnet50, resnet18, efficientnet_b0, vgg19
+pretrained: True
+freeze_cnn: True
+pretrained_coco: False
+temporal_model: convlstm  # convlstm or lstm
+hidden_dim: 256
+num_layers: 3
+kernel_size: 3
+num_classes: 7
+dropout: 0.3
+bidirectional: False
+weight_init: xavier_uniform
+
+# Optimizer settings
+optimizer: sgd
+lr: 0.001
+weight_decay: 0.0001
+momentum: 0.9
+clip_gradient: 20.0
+
+# Scheduler settings
+scheduler: step
+scheduler_step_size: 25
+scheduler_gamma: 0.1
+
+# Loss settings
+loss_type: crossentropy

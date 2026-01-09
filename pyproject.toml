@@ -1,0 +1,25 @@
+[project]
+name = "action-recognition"
+version = "0.1.0"
+requires-python = ">=3.10"
+
+dependencies = [
+  "torch==2.6.0",
+  "torchvision==0.21.0",
+  "torchaudio==2.6.0",
+  "numpy==1.26.4",
+  "transformers==4.57.3",
+  "huggingface-hub==0.36.0",
+  "decord==0.6.0",
+  "opencv-python==4.11.0.86",
+  "pillow==11.3.0",
+  "tokenizers==0.22.1",
+  "safetensors==0.7.0",
+  "tqdm==4.67.1",
+  "regex==2025.11.3",
+  "scipy==1.13.1",
+  "scikit-learn==1.4.2",
+  "pandas==2.3.0",
+  "matplotlib==3.9.4",
+  "seaborn==0.13.2"
+]
