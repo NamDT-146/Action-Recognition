@@ -72,6 +72,7 @@ def check_mlflow_connection(tracking_uri, timeout=5):
     except (socket.timeout, socket.error, ValueError, OSError):
         return False
     
+
 def freeze_layers(model, num_layers_to_freeze):
     """
     Freeze first N layers of the model.
@@ -285,6 +286,7 @@ def validate(model, val_loader, criterion, device, epoch, writer=None):
     
     return epoch_loss, epoch_acc
 
+
 def save_checkpoint(state, save_dir, filename='checkpoint.pth'):
     """Save model checkpoint"""
     os.makedirs(save_dir, exist_ok=True)
@@ -312,20 +314,37 @@ def main(config_path):
     full_save_dir = os.path.join(save_dir, save_name)
     os.makedirs(full_save_dir, exist_ok=True)
     
+    # Create training log file
+    log_file_path = os.path.join(full_save_dir, 'training_log.txt')
+    log_file = open(log_file_path, 'w')
+    
+    def log_message(message, print_console=True):
+        """Write message to both console and log file"""
+        if print_console:
+            print(message)
+        log_file.write(message + '\n')
+        log_file.flush()
+    
+    # Log training start
+    log_message(f"{'='*80}")
+    log_message(f"Training Started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    log_message(f"{'='*80}\n")
+    log_message(f"Configuration:\n{yaml.dump(config, default_flow_style=False)}")
+    
     # Check MLflow connection
     mlflow_tracking_uri = os.getenv('MLFLOW_TRACKING_URI', 'http://192.168.1.198:5231')
     mlflow_timeout = config.get('mlflow_timeout', 5)
     use_mlflow = False
     writer = None
     
-    print(f"Checking MLflow connection to {mlflow_tracking_uri} (timeout: {mlflow_timeout}s)...")
+    log_message(f"Checking MLflow connection to {mlflow_tracking_uri} (timeout: {mlflow_timeout}s)...")
     if check_mlflow_connection(mlflow_tracking_uri, timeout=mlflow_timeout):
-        print("✅ MLflow connection successful!")
+        log_message("✅ MLflow connection successful!")
         use_mlflow = True
         mlflow.set_tracking_uri(mlflow_tracking_uri)
         mlflow.set_experiment(config.get('experiment_name', 'action_recognition'))
     else:
-        print(f"❌ MLflow connection failed. Falling back to TensorBoard...")
+        log_message(f"❌ MLflow connection failed. Falling back to TensorBoard...")
         use_mlflow = False
         # Setup TensorBoard
         writer = SummaryWriter(os.path.join(full_save_dir, 'runs'))
@@ -340,13 +359,21 @@ def main(config_path):
     
     mlflow_context = mlflow.start_run(run_name=save_name) if use_mlflow else DummyMlflowRun()
     
+    # Track best metrics
+    best_train_loss = float('inf')
+    best_train_acc = 0.0
+    best_val_loss = float('inf')
+    best_val_acc = 0.0  # Initialize BEFORE the loop
+    best_test_loss = float('inf')
+    best_test_acc = 0.0
+    
     with mlflow_context:
         # Log all config parameters
         if use_mlflow:
             mlflow.log_params(config)
         
         # Create data loaders
-        print("Creating data loaders...")
+        log_message("\nCreating data loaders...")
         train_loader, val_loader, test_loader = get_data_loader(
             data_dir=config.get('data_dir', '/home/atin-ct3/action_recognition/data'),
             dataset_name=config.get('dataset', 'hand-gestures'),
@@ -359,19 +386,26 @@ def main(config_path):
             val_split=config.get('val_split', 0.15),
             gesture_filter=config.get('gesture_filter', None),
             set_filter=config.get('set_filter', None),
-            model_name=config.get('model_name', 'LSTM_CNN')
+            model_name=config.get('model_name', 'LSTM_CNN'),
+            num_frames=config.get('num_frames', 8),
+            frame_step=config.get('frame_step', 1)
         )
         
+        log_message(f"Data loaders created:")
+        log_message(f"  Train batches: {len(train_loader)}")
+        log_message(f"  Val batches: {len(val_loader)}")
+        log_message(f"  Test batches: {len(test_loader)}")
+        
         # Create model
-        print("Creating model...")
+        log_message("\nCreating model...")
         model_name = config.get('model_name', 'LSTM_CNN')
         
         if model_name == 'TimeSformer':
-        # Create TimeSformer model
+            # Create TimeSformer model
             model = get_model(**config)
             optimizer = get_optimizer(model, config)
             criterion = get_criterion(config)
-        if model_name == 'LSTM_CNN':
+        elif model_name == 'LSTM_CNN':
             model, optimizer, criterion = get_model(**config)
             criterion = get_criterion(config)
         else:
@@ -388,17 +422,16 @@ def main(config_path):
         if config.get('pretrained_weight', ""):
             pretrained_path = config['pretrained_weight']
             if os.path.exists(pretrained_path):
-                print(f"Loading pretrained weights from: {pretrained_path}")
+                log_message(f"Loading pretrained weights from: {pretrained_path}")
                 pretrained_dict = torch.load(pretrained_path, map_location=device)
                 
                 # Handle mismatch in the last layer (logits) due to different number of classes
-                # Remove keys related to the classification head to avoid size mismatch
                 keys_to_remove = [k for k in pretrained_dict.keys() if 'logits' in k]
                 for k in keys_to_remove:
                     del pretrained_dict[k]
                 
                 model.load_state_dict(pretrained_dict, strict=False)
-                print(f"Loaded pretrained weights (excluding mismatched logits layer)")
+                log_message(f"Loaded pretrained weights (excluding mismatched logits layer)")
                 
                 # Freeze layers if pretrained
                 num_layers_to_freeze = config.get('num_layers_to_freeze', 0)
@@ -407,31 +440,32 @@ def main(config_path):
                 
                 warmup_epochs = config.get('warmup_epochs', 0)
                 if warmup_epochs > 0:
-                    print(f"Warmup will be applied for {warmup_epochs} epochs")
+                    log_message(f"Warmup will be applied for {warmup_epochs} epochs")
             else:
-                print(f"Warning: Pretrained weights path does not exist: {pretrained_path}")
+                log_message(f"Warning: Pretrained weights path does not exist: {pretrained_path}")
         else:
             warmup_epochs = 0
 
         # Resume from checkpoint if specified
         start_epoch = 0
-        best_val_acc = 0.0
         if config.get('resume', False) and config.get('load_path', None):
             load_path = config['load_path']
             if os.path.exists(load_path):
-                print(f"Resuming from checkpoint: {load_path}")
+                log_message(f"Resuming from checkpoint: {load_path}")
                 checkpoint = torch.load(load_path, map_location=device)
                 model.load_state_dict(checkpoint['model_state_dict'])
                 optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
                 start_epoch = checkpoint['epoch']
                 best_val_acc = checkpoint.get('best_val_acc', 0.0)
-                print(f"Resumed from epoch {start_epoch}")
+                log_message(f"Resumed from epoch {start_epoch}")
         
         # Print model info
         total_params = sum(p.numel() for p in model.parameters())
         trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-        print(f"Total parameters: {total_params:,}")
-        print(f"Trainable parameters: {trainable_params:,}")
+        log_message(f"\nModel Information:")
+        log_message(f"  Model: {model_name}")
+        log_message(f"  Total parameters: {total_params:,}")
+        log_message(f"  Trainable parameters: {trainable_params:,}")
         
         if use_mlflow:
             mlflow.log_param("total_params", total_params)
@@ -441,18 +475,23 @@ def main(config_path):
         epochs = config.get('epochs', 50)
         warmup_epochs = config.get('warmup_epochs', 0)
         num_layers_to_freeze = config.get('num_layers_to_freeze', 0)
-        print(f"\nStarting training for {epochs} epochs...")
-        print(f"Using logging: {'MLflow' if use_mlflow else 'TensorBoard'}")
+        
+        log_message(f"\n{'='*80}")
+        log_message(f"Starting training for {epochs} epochs")
+        log_message(f"Logging backend: {'MLflow' if use_mlflow else 'TensorBoard'}")
+        log_message(f"{'='*80}\n")
         
         for epoch in range(start_epoch, epochs):
+            epoch_start_time = time.time()
+            
             # Unfreeze layers after warmup
             if epoch == warmup_epochs and num_layers_to_freeze > 0 and warmup_epochs > 0:
-                print(f"\n🔓 Unfreezing all layers after warmup (epoch {epoch})")
+                log_message(f"\n🔓 Unfreezing all layers after warmup (epoch {epoch})")
                 unfreeze_all_layers(model)
                 
                 # Optionally reset optimizer for fine-tuning phase
                 if config.get('reset_optimizer_after_warmup', False):
-                    print("Resetting optimizer for fine-tuning phase")
+                    log_message("Resetting optimizer for fine-tuning phase")
                     optimizer = get_optimizer(model, config)
                     scheduler = get_scheduler(optimizer, config)
             
@@ -470,15 +509,32 @@ def main(config_path):
             if scheduler is not None:
                 scheduler.step()
             
+            epoch_time = time.time() - epoch_start_time
+
+            is_best = val_acc > best_val_acc
+            
+            # Update best metrics
+            if train_loss < best_train_loss:
+                best_train_loss = train_loss
+            if train_acc > best_train_acc:
+                best_train_acc = train_acc
+            if val_loss < best_val_loss:
+                best_val_loss = val_loss
+            if val_acc > best_val_acc:
+                best_val_acc = val_acc
+            
             # Log metrics
-            print(f"\nEpoch {epoch}/{epochs}")
-            print(f"Train Loss: {train_loss:.4f}, Train Acc: {train_acc:.2f}%")
-            print(f"Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.2f}%")
+            log_message(f"\n{'='*80}")
+            log_message(f"Epoch {epoch+1}/{epochs} - Time: {epoch_time:.2f}s")
+            log_message(f"{'='*80}")
+            log_message(f"Train Loss: {train_loss:.4f} | Train Acc: {train_acc:.2f}%")
+            log_message(f"Val Loss:   {val_loss:.4f} | Val Acc:   {val_acc:.2f}%")
+            log_message(f"LR: {optimizer.param_groups[0]['lr']:.6f}")
             
             # Log trainable parameters count during warmup
             if epoch < warmup_epochs:
                 trainable_count = get_trainable_params_count(model)
-                print(f"[Warmup Phase] Trainable parameters: {trainable_count:,}")
+                log_message(f"[Warmup Phase] Trainable parameters: {trainable_count:,}")
             
             if use_mlflow:
                 # Log to MLflow
@@ -497,16 +553,13 @@ def main(config_path):
                 writer.add_scalar('LR', optimizer.param_groups[0]['lr'], epoch)
                 writer.add_scalar('Trainable_Params', get_trainable_params_count(model), epoch)
             
-            # Save checkpoint
-            is_best = val_acc > best_val_acc
-            if is_best:
-                best_val_acc = val_acc
-            
+            # Save checkpoint            
             checkpoint = {
                 'epoch': epoch + 1,
                 'model_state_dict': model.state_dict(),
                 'optimizer_state_dict': optimizer.state_dict(),
                 'train_loss': train_loss,
+                'train_acc': train_acc,
                 'val_loss': val_loss,
                 'val_acc': val_acc,
                 'best_val_acc': best_val_acc,
@@ -518,22 +571,38 @@ def main(config_path):
             
             # Save best checkpoint
             if is_best:
+                best_model_path = os.path.join(full_save_dir, 'best_model.pth')
                 save_checkpoint(checkpoint, full_save_dir, 'best_model.pth')
-                print(f"New best model saved with validation accuracy: {val_acc:.2f}%")
+                log_message(f"✅ New best model saved with validation accuracy: {val_acc:.2f}%")
                 
+                # Try to log to MLflow, fallback to local save
                 if use_mlflow:
-                    # Log best model artifact to MLflow
-                    mlflow.log_artifact(os.path.join(full_save_dir, 'best_model.pth'))
+                    try:
+                        mlflow.log_artifact(best_model_path)
+                        log_message(f"✅ Best model logged to MLflow")
+                    except Exception as e:
+                        log_message(f"⚠️  Failed to log best model to MLflow: {e}")
+                        log_message(f"✅ Best model saved locally at: {best_model_path}")
         
         # Final evaluation on test set
-        print("\nEvaluating on test set...")
+        log_message(f"\n{'='*80}")
+        log_message("Evaluating on test set...")
+        log_message(f"{'='*80}")
         test_loss, test_acc = validate(model, test_loader, criterion, device, epochs-1, writer)
-        print(f"Test Loss: {test_loss:.4f}, Test Acc: {test_acc:.2f}%")
+        
+        # Update best test metrics
+        best_test_loss = test_loss
+        best_test_acc = test_acc
+        
+        log_message(f"Test Loss: {test_loss:.4f} | Test Acc: {test_acc:.2f}%")
         
         if use_mlflow:
-            # Log final test metrics
-            mlflow.log_metric("test_loss", test_loss)
-            mlflow.log_metric("test_acc", test_acc)
+            try:
+                # Log final test metrics
+                mlflow.log_metric("test_loss", test_loss)
+                mlflow.log_metric("test_acc", test_acc)
+            except Exception as e:
+                log_message(f"⚠️  Failed to log test metrics to MLflow: {e}")
         
         # Create dummy input for model signature
         dummy_batch = next(iter(test_loader))
@@ -545,7 +614,7 @@ def main(config_path):
         
         # Log final model to MLflow (only if available)
         if use_mlflow:
-            print("\nLogging model to MLflow...")
+            log_message("\nLogging final model to MLflow...")
             try:
                 mlflow.pytorch.log_model(
                     model,
@@ -553,32 +622,81 @@ def main(config_path):
                     registered_model_name=f"{config.get('dataset', 'dataset')}_{model_name}",
                     input_example=dummy_input
                 )
+                log_message("✅ Final model logged to MLflow successfully")
             except Exception as e:
-                print(f"Warning: Failed to log model to MLflow: {e}")
+                log_message(f"⚠️  Failed to log final model to MLflow: {e}")
+                log_message(f"✅ Model saved locally - continuing with cleanup...")
         
-        # Save training summary
-        with open(os.path.join(full_save_dir, 'training_summary.txt'), 'w') as f:
+        # Save final training summary
+        log_message(f"\n{'='*80}")
+        log_message("Training Summary")
+        log_message(f"{'='*80}")
+        log_message(f"Model: {model_name}")
+        log_message(f"Dataset: {config.get('dataset')}")
+        log_message(f"Total Parameters: {total_params:,}")
+        log_message(f"Trainable Parameters: {trainable_params:,}")
+        log_message(f"Logging Backend: {'MLflow' if use_mlflow else 'TensorBoard'}")
+        log_message(f"\nBest Metrics:")
+        log_message(f"  Best Train Loss: {best_train_loss:.4f}")
+        log_message(f"  Best Train Acc:  {best_train_acc:.2f}%")
+        log_message(f"  Best Val Loss:   {best_val_loss:.4f}")
+        log_message(f"  Best Val Acc:    {best_val_acc:.2f}%")
+        log_message(f"  Test Loss:       {best_test_loss:.4f}")
+        log_message(f"  Test Acc:        {best_test_acc:.2f}%")
+        log_message(f"\nTraining Completed: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        log_message(f"{'='*80}\n")
+        
+        # Save training summary to separate file
+        summary_file_path = os.path.join(full_save_dir, 'training_summary.txt')
+        with open(summary_file_path, 'w') as f:
             f.write(f"Training Summary\n")
-            f.write(f"================\n\n")
+            f.write(f"{'='*80}\n\n")
+            f.write(f"Experiment: {config.get('experiment_name', 'N/A')}\n")
             f.write(f"Model: {model_name}\n")
             f.write(f"Dataset: {config.get('dataset')}\n")
-            f.write(f"Best Validation Accuracy: {best_val_acc:.2f}%\n")
-            f.write(f"Test Accuracy: {test_acc:.2f}%\n")
-            f.write(f"Total Parameters: {total_params:,}\n")
-            f.write(f"Trainable Parameters: {trainable_params:,}\n")
+            f.write(f"Training Completed: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
+            f.write(f"Model Information:\n")
+            f.write(f"  Total Parameters: {total_params:,}\n")
+            f.write(f"  Trainable Parameters: {trainable_params:,}\n\n")
+            f.write(f"Best Training Metrics:\n")
+            f.write(f"  Best Train Loss: {best_train_loss:.4f}\n")
+            f.write(f"  Best Train Accuracy: {best_train_acc:.2f}%\n\n")
+            f.write(f"Best Validation Metrics:\n")
+            f.write(f"  Best Val Loss: {best_val_loss:.4f}\n")
+            f.write(f"  Best Val Accuracy: {best_val_acc:.2f}%\n\n")
+            f.write(f"Test Metrics:\n")
+            f.write(f"  Test Loss: {best_test_loss:.4f}\n")
+            f.write(f"  Test Accuracy: {best_test_acc:.2f}%\n\n")
             f.write(f"Logging Backend: {'MLflow' if use_mlflow else 'TensorBoard'}\n")
+            f.write(f"Model Checkpoint: {os.path.join(full_save_dir, 'best_model.pth')}\n")
+            f.write(f"Latest Checkpoint: {os.path.join(full_save_dir, 'latest_model.pth')}\n")
+            f.write(f"Results saved to: {full_save_dir}\n")
         
+        # Log artifacts to MLflow with fallback
         if use_mlflow:
-            mlflow.log_artifact(os.path.join(full_save_dir, 'training_summary.txt'))
+            try:
+                mlflow.log_artifact(summary_file_path)
+                mlflow.log_artifact(log_file_path)
+                log_message("✅ Training logs uploaded to MLflow")
+            except Exception as e:
+                log_message(f"⚠️  Failed to upload logs to MLflow: {e}")
+                log_message(f"✅ Logs saved locally at: {full_save_dir}")
         
         if writer is not None:
             writer.close()
         
+        log_file.close()
+        
         print("\n✅ Training completed successfully!")
         print(f"Results saved to: {full_save_dir}")
-        print(f"Best validation accuracy: {best_val_acc:.2f}%")
-        print(f"Test accuracy: {test_acc:.2f}%")
-        print(f"Logging backend: {'MLflow' if use_mlflow else 'TensorBoard'}")
+        print(f"Training log: {log_file_path}")
+        print(f"Summary: {summary_file_path}")
+        print(f"Best model: {os.path.join(full_save_dir, 'best_model.pth')}")
+        print(f"Latest model: {os.path.join(full_save_dir, 'latest_model.pth')}")
+        print(f"\nBest Results:")
+        print(f"  Train - Loss: {best_train_loss:.4f}, Acc: {best_train_acc:.2f}%")
+        print(f"  Val   - Loss: {best_val_loss:.4f}, Acc: {best_val_acc:.2f}%")
+        print(f"  Test  - Loss: {best_test_loss:.4f}, Acc: {best_test_acc:.2f}%")
 
 
 if __name__ == '__main__':

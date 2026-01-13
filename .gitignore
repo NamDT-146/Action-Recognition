@@ -124,6 +124,9 @@ data/
 *.mov
 *.MOV
 
+# Dataset splits
+**/splits.csv
+
 # Weights and checkpoints
 weights/
 checkpoints/

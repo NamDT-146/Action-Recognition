@@ -3,10 +3,12 @@ from torch.utils.data import DataLoader, random_split
 from .loader.VideoDataset import VideoDataset, create_video_dataset, create_timesformer_dataset
 from .loader.HandGesturesDataset import HandGesturesDataset, create_hand_gestures_dataset
 from .loader.Human7ActionDataset import create_human7action_dataset
+from .loader.RWFDataset import get_rfw_dataset, create_rfw_dataloaders
 
 # Dataset registry
 DATASET_REGISTRY = {
     'RFW-2000-cleaned': create_video_dataset,
+    'rfw': get_rfw_dataset,  # New RFW dataset with splits
     'hockey': create_video_dataset,
     'movies': create_video_dataset,
     'hand-gestures': create_hand_gestures_dataset,
@@ -16,27 +18,29 @@ DATASET_REGISTRY = {
 def get_data_loader(data_dir, dataset_name, batch_size=4, figure_size=224,
                     seq_length=20, crop_dark=None, num_workers=4,
                     train_split=0.7, val_split=0.15, gesture_filter=None,
-                    set_filter=None, model_name='LSTM_CNN', num_frames=8, **kwargs):
+                    set_filter=None, model_name='LSTM_CNN', num_frames=8, 
+                    frame_step=1, **kwargs):
     """
     Universal DataLoader creator for all datasets.
     
     Args:
-        data_dir (str): Root data directory
-        dataset_name (str): Name of dataset (must be in DATASET_REGISTRY)
-        batch_size (int): Batch size for DataLoader
-        figure_size (int): Target frame size
-        seq_length (int): Number of frame differences
-        crop_dark (tuple): Coordinates for dark border removal
-        num_workers (int): Number of workers
-        train_split (float): Training set proportion (default: 0.7)
-        val_split (float): Validation set proportion (default: 0.15)
-        gesture_filter (list): For hand gestures dataset only
-        set_filter (list): For hand gestures dataset only
-        **kwargs: Additional dataset-specific arguments
+        frame_step (int): Step between frames (1=consecutive, 2=skip 1, etc.)
         
     Returns:
         tuple: (train_loader, val_loader, test_loader)
     """
+    # Special handling for RFW dataset with CSV splits
+    if dataset_name == 'rfw':
+        return create_rfw_dataloaders(
+            data_dir=data_dir,
+            batch_size=batch_size,
+            figure_size=figure_size,
+            num_frames=num_frames,
+            frame_step=frame_step,
+            model_name=model_name,
+            num_workers=num_workers
+        )
+    
     if model_name == 'TimeSformer':
         # Use TimeSformer dataset
         full_dataset = create_timesformer_dataset(
