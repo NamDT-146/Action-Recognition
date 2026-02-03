@@ -511,7 +511,8 @@ def main(config_path):
             
             epoch_time = time.time() - epoch_start_time
 
-            is_best = val_acc > best_val_acc
+            is_best_acc = val_acc > best_val_acc
+            is_best_loss = val_loss < best_val_loss
             
             # Update best metrics
             if train_loss < best_train_loss:
@@ -542,6 +543,8 @@ def main(config_path):
                 mlflow.log_metric("train_acc", train_acc, step=epoch)
                 mlflow.log_metric("val_loss", val_loss, step=epoch)
                 mlflow.log_metric("val_acc", val_acc, step=epoch)
+                mlflow.log_metric("best_val_loss", best_val_loss, step=epoch)
+                mlflow.log_metric("best_val_acc", best_val_acc, step=epoch)
                 mlflow.log_metric("lr", optimizer.param_groups[0]['lr'], step=epoch)
                 mlflow.log_metric("trainable_params", get_trainable_params_count(model), step=epoch)
             else:
@@ -550,6 +553,8 @@ def main(config_path):
                 writer.add_scalar('Train/Accuracy', train_acc, epoch)
                 writer.add_scalar('Val/Loss', val_loss, epoch)
                 writer.add_scalar('Val/Accuracy', val_acc, epoch)
+                writer.add_scalar('Best/Val_Loss', best_val_loss, epoch)
+                writer.add_scalar('Best/Val_Accuracy', best_val_acc, epoch)
                 writer.add_scalar('LR', optimizer.param_groups[0]['lr'], epoch)
                 writer.add_scalar('Trainable_Params', get_trainable_params_count(model), epoch)
             
@@ -563,26 +568,42 @@ def main(config_path):
                 'val_loss': val_loss,
                 'val_acc': val_acc,
                 'best_val_acc': best_val_acc,
+                'best_val_loss': best_val_loss,
                 'config': config
             }
             
             # Save latest checkpoint
             save_checkpoint(checkpoint, full_save_dir, 'latest_model.pth')
             
-            # Save best checkpoint
-            if is_best:
-                best_model_path = os.path.join(full_save_dir, 'best_model.pth')
-                save_checkpoint(checkpoint, full_save_dir, 'best_model.pth')
-                log_message(f"✅ New best model saved with validation accuracy: {val_acc:.2f}%")
+            # Save best accuracy checkpoint
+            if is_best_acc:
+                best_acc_model_path = os.path.join(full_save_dir, 'best_model_acc.pth')
+                save_checkpoint(checkpoint, full_save_dir, 'best_model_acc.pth')
+                log_message(f"✅ New best accuracy model saved! Val Acc: {val_acc:.2f}%")
                 
                 # Try to log to MLflow, fallback to local save
                 if use_mlflow:
                     try:
-                        mlflow.log_artifact(best_model_path)
-                        log_message(f"✅ Best model logged to MLflow")
+                        mlflow.log_artifact(best_acc_model_path)
+                        log_message(f"✅ Best accuracy model logged to MLflow")
                     except Exception as e:
-                        log_message(f"⚠️  Failed to log best model to MLflow: {e}")
-                        log_message(f"✅ Best model saved locally at: {best_model_path}")
+                        log_message(f"⚠️  Failed to log best accuracy model to MLflow: {e}")
+                        log_message(f"✅ Best accuracy model saved locally at: {best_acc_model_path}")
+            
+            # Save best loss checkpoint
+            if is_best_loss:
+                best_loss_model_path = os.path.join(full_save_dir, 'best_model_loss.pth')
+                save_checkpoint(checkpoint, full_save_dir, 'best_model_loss.pth')
+                log_message(f"✅ New best loss model saved! Val Loss: {val_loss:.4f}")
+                
+                # Try to log to MLflow, fallback to local save
+                if use_mlflow:
+                    try:
+                        mlflow.log_artifact(best_loss_model_path)
+                        log_message(f"✅ Best loss model logged to MLflow")
+                    except Exception as e:
+                        log_message(f"⚠️  Failed to log best loss model to MLflow: {e}")
+                        log_message(f"✅ Best loss model saved locally at: {best_loss_model_path}")
         
         # Final evaluation on test set
         log_message(f"\n{'='*80}")
@@ -668,8 +689,10 @@ def main(config_path):
             f.write(f"  Test Loss: {best_test_loss:.4f}\n")
             f.write(f"  Test Accuracy: {best_test_acc:.2f}%\n\n")
             f.write(f"Logging Backend: {'MLflow' if use_mlflow else 'TensorBoard'}\n")
-            f.write(f"Model Checkpoint: {os.path.join(full_save_dir, 'best_model.pth')}\n")
-            f.write(f"Latest Checkpoint: {os.path.join(full_save_dir, 'latest_model.pth')}\n")
+            f.write(f"Model Checkpoints:\n")
+            f.write(f"  Best Accuracy: {os.path.join(full_save_dir, 'best_model_acc.pth')}\n")
+            f.write(f"  Best Loss: {os.path.join(full_save_dir, 'best_model_loss.pth')}\n")
+            f.write(f"  Latest: {os.path.join(full_save_dir, 'latest_model.pth')}\n")
             f.write(f"Results saved to: {full_save_dir}\n")
         
         # Log artifacts to MLflow with fallback
@@ -691,8 +714,10 @@ def main(config_path):
         print(f"Results saved to: {full_save_dir}")
         print(f"Training log: {log_file_path}")
         print(f"Summary: {summary_file_path}")
-        print(f"Best model: {os.path.join(full_save_dir, 'best_model.pth')}")
-        print(f"Latest model: {os.path.join(full_save_dir, 'latest_model.pth')}")
+        print(f"\nModel Checkpoints:")
+        print(f"  Best Accuracy: {os.path.join(full_save_dir, 'best_model_acc.pth')}")
+        print(f"  Best Loss: {os.path.join(full_save_dir, 'best_model_loss.pth')}")
+        print(f"  Latest: {os.path.join(full_save_dir, 'latest_model.pth')}")
         print(f"\nBest Results:")
         print(f"  Train - Loss: {best_train_loss:.4f}, Acc: {best_train_acc:.2f}%")
         print(f"  Val   - Loss: {best_val_loss:.4f}, Acc: {best_val_acc:.2f}%")

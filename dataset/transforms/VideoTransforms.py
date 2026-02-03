@@ -327,7 +327,7 @@ class VideoTransforms:
             ComputeFrameDifferences()
         ]
 
-        if model_name == "I3D":
+        if model_name == "I3D" or model_name == "X3D":
             video_transforms.append(TransposeSequence())
 
         return VideoTransforms(
@@ -357,7 +357,7 @@ class VideoTransforms:
             StackFrames()
         ]
         
-        if model_name == "I3D":
+        if model_name == "I3D" or model_name == "X3D":
             video_transforms.append(TransposeSequence())
 
         return VideoTransforms(

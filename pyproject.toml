@@ -25,5 +25,14 @@ dependencies = [
   "dotenv",
   "mlflow",
   "boto3",
-  "tensorboard"
+  "tensorboard",
+  "pytorchvideo",
+  "transformers",
+  "qwen-vl-utils",
+  "accelerate",
+  "jupyter==1.0.0",
+  "jupyterlab==4.3.4",
+  "ipykernel==6.29.5",
+  "ipython==8.31.0",
+  "ipywidgets==8.1.5"
 ]
