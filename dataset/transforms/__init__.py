@@ -1,4 +1,5 @@
 from .VideoTransforms import VideoTransforms
+from .VideoAugmentation import VideoAugmentation, VideoAugmentationPipeline
 
 def get_transform_sequence(transform_names, **kwargs):
     """

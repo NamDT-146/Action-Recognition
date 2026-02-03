@@ -6,6 +6,7 @@ from .TDN.ops.tdn_net import tdn_net
 from .TimeSformer.model import TimeSformerModel, get_timesformer_model
 from .X3D.X3D import X3DModel, get_model_x3d
 # from .TCM.TCM import TCM
+from .Adapter.adapter import MIL_MLP, MIL_LSTM, MIL_Conv1D, get_adapter
 
 def get_model(model_name, **kwargs):
     """
