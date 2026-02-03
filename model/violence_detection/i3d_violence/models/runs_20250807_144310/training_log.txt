@@ -1,0 +1,17 @@
+[2025-08-07 14:43:10] Starting training with parameters:
+[2025-08-07 14:43:10]   Mode: flow
+[2025-08-07 14:43:10]   Split file: data/precomputed/split_info.csv
+[2025-08-07 14:43:10]   Validation split: 0.2
+[2025-08-07 14:43:10]   Batch size: 16
+[2025-08-07 14:43:10]   Num frames: 16
+[2025-08-07 14:43:10]   Device: cuda
+[2025-08-07 14:43:10]   Early stopping patience: 15
+[2025-08-07 14:43:10]   Loss function: bce_logits
+[2025-08-07 14:43:10]   Steps per validation: 64
+[2025-08-07 14:43:10]   Steps to log: 8
+[2025-08-07 14:43:10]   Warmup steps: 128
+[2025-08-07 14:43:10]   Resume checkpoint: None
+[2025-08-07 14:43:10]   Weight decay: 1e-05
+[2025-08-07 14:43:10]   Dropout rate: 0.5
+[2025-08-07 14:43:10]   Label smoothing: 0.0
+[2025-08-07 14:43:10]   Gradient clipping: 1.0

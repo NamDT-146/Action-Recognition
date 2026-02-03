@@ -1,0 +1,128 @@
+Stream -> Frame Sequence (sequence of 16 frame with step 2) | -> Filter frame anomally(3 layer) -> Anomally Profile
+
+| -> X3D model take input  -> Embedding -> prediction with confidence
+
+Sequence of window prediction ( X3D output) -> LSTM(Adapted to domain) -> Alert/Normal
+
+Monitor(take also anormaly profile, alert, sequence wise confident prediction, cooldown, frozen)
+
+
+
+About Anomaly filter layer:
+
+# 1. Instantiate
+
+signal_filter = VideoSignalFilter()
+
+cap = cv2.VideoCapture("rtsp://camera_feed")
+
+
+
+while True:
+
+    ret, frame = cap.read()
+
+    if not ret: break
+
+    
+
+    # Convert to grayscale for signal analysis (faster, sufficient)
+
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+
+
+    # --- LAYER 1: Global Gate ---
+
+    # Is the image technically sound?
+
+    gate_status = signal_filter.layer_1_global_gate(gray)
+
+    
+
+    if gate_status != "NORMAL":
+
+        print(f"[REJECT] Signal Unstable: {gate_status}")
+
+        # Action: Skip frame, do not send to AI model.
+
+        # Logic: If 'LIGHT_SHIFT', maybe wait 1 second for camera to settle.
+
+        continue
+
+
+
+    # --- LAYER 2: Motion Norm ---
+
+    # Get the 'pure' movement, removing static background
+
+    residual = signal_filter.layer_2_motion_residual(gray)
+
+
+
+    # --- LAYER 3: Pixel Faults ---
+
+    # Is the movement real or just glitches?
+
+    signal_health = signal_filter.layer_3_fault_check(residual)
+
+    
+
+    if signal_health != "VALID":
+
+        print(f"[REJECT] Bad Signal: {signal_health}")
+
+        # Action: Raise technical alert (e.g. "Check Camera Connection")
+
+        continue
+
+
+
+    # --- SUCCESS ---
+
+    # If we get here, the frame is clean, stable, and contains valid motion.
+
+    # NOW run your Violence Detection AI.
+
+    print("[PASS] Sending to AI Model...")
+
+    # ai_prediction = my_violence_model.predict(frame)
+
+for these threshold: LIGHT_JUMP_THRESH, BLUR_THRESH, ALPHA. I tend to have an initialize state where data for 1 day will be collection to choose an initialize. Then while running the threshold will adaptively change through the real condition
+
+
+
+About X3D model: Pretrained on violence detection data, should be calibrated
+
+
+
+About  LSTM: use standard MIL training logic showed above, data will be normal data recorded in reallife vs unseen violence data cctv (risk note that can be overfit to background, but the embeding of pretrained model on violence detection expected to be focus on action and human features) Default step is 5(which means (16 - 1)x2x(5 - 1) frame length in real life observed each prediction of 1D-CNN. It slide with step 1.
+
+
+
+This is the most popular approach for this exact data setup (Sultani et al., CVPR 2018).
+
+The Logic: You treat a whole video as a "Bag" of features.
+
+A Normal Video is a Negative Bag (all segments are normal).
+
+A Violent Video is a Positive Bag (at least one segment is violent, but we don't know which).
+
+The Model: A simple temporal network (usually 3 fully connected layers or a small 1D-CNN) maps the sequence of 2048-dim features to a score between 0 and 1.
+
+The Loss Function: You don't train on "Is this frame violent?" You train on a Ranking Loss:
+
+$$Loss = \max(Score_{ViolentBag}) - \max(Score_{NormalBag})$$
+
+This forces the highest peak in the violent video to be higher than the highest peak in the normal video.
+
+
+Step 1: Train X3D model (DONE)
+
+Step 2: Adapt LSTM model on OCC setting
+
+Step 3: Implement Application: 3 stream: 
+- Sequence Stream( including preprocessing, stacking frame | monitoring )
+- Preprocess Stream( filtering, processing, emit frame status(anomally) to monitoring)
+- Predict Stream( Run X3D inference )
+- Profile Stream( Decision logic by LSTM )

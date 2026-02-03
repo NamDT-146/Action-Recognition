@@ -115,7 +115,6 @@ dmypy.json
 data/
 *.csv
 *.json
-*.txt
 *.pkl
 *.npy
 *.npz
