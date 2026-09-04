@@ -115,7 +115,6 @@ dmypy.json
 data/
 *.csv
 *.json
-*.txt
 *.pkl
 *.npy
 *.npz
@@ -145,6 +144,7 @@ tensorboard/
 wandb/
 mlruns/
 outputs/
+runs/
 
 # IDE
 .vscode/
@@ -275,7 +275,6 @@ dmypy.json
 data/
 *.csv
 *.json
-*.txt
 *.pkl
 *.npy
 *.npz

@@ -1,0 +1,64 @@
+# Configuration for I3D model on RWF-2000 Violence Detection dataset
+
+# Experiment settings
+experiment_name: i3d_rwf_violence_detection
+save_dir: ./checkpoints
+save_name: i3d_rwf_violence
+resume: False
+load_path: ./checkpoints/i3d_rwf_violence/latest_model.pth
+mlflow_timeout: 5
+
+# Training settings
+epochs: 50
+batch_size: 8
+num_workers: 4
+seed: 42
+gpu: 0
+
+# Dataset settings
+data_dir: /home/atin-ct3/action_recognition/data/RFW-2000-cleaned
+dataset: rfw
+train_split: 0.7
+val_split: 0.15
+num_frames: 16  # I3D typically uses 16 frames
+frame_step: 1   # Step between frames in sequence (1=consecutive frames)
+
+# Inference settings
+inference_step: 4  # Step size for sliding window during inference
+                   # num_frames=16, step=4 means 12-frame overlap
+
+# Model settings
+model_name: I3D
+cnn_arch: resnet50
+pretrained: True
+hidden_dim: 256
+num_layers: 3
+kernel_size: 3
+num_classes: 2  # Binary classification: non-violence (0) vs violence (1)
+dropout: 0.3
+bidirectional: False
+weight_init: xavier_uniform
+
+# Fine-tuning settings
+pretrained_weight: "/home/atin-ct3/action_recognition/pretrained_weights/i3d/models/rgb_charades.pt"
+num_layers_to_freeze: 5  # Freeze first 5 layers during warmup
+warmup_epochs: 3  # Train only classifier for 3 epochs
+reset_optimizer_after_warmup: True
+
+# Optimizer settings
+optimizer: sgd
+lr: 0.001
+weight_decay: 0.0001
+momentum: 0.9
+clip_gradient: 20.0
+
+# Scheduler settings
+scheduler: step
+scheduler_step_size: 15
+scheduler_gamma: 0.1
+
+# Loss settings
+loss_type: crossentropy
+
+# Image preprocessing
+img_size: 224  # I3D expects 224x224 frames

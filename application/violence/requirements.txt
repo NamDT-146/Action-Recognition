@@ -1,0 +1,8 @@
+torch
+torchvision
+cupy-cuda12x
+PyQT5 
+request 
+PyYAML 
+opencv-python 
+ffmpeg-python

@@ -1,0 +1,52 @@
+# Configuration for TimeSformer model on RWF-2000 Violence Detection dataset
+
+# Experiment settings
+experiment_name: tsm_rfw_violence_detection
+save_dir: ./checkpoints
+save_name: tsm_rfw_violence
+resume: True
+load_path: ./checkpoints/tsm_rfw_violence/latest_model.pth
+mlflow_timeout: 5
+
+# Training settings
+epochs: 50
+batch_size: 16  # TimeSformer requires significant memory
+num_workers: 4
+seed: 42
+gpu: 0
+
+# Dataset settings
+data_dir: /home/atin-ct3/action_recognition/data/RFW-2000-cleaned
+dataset: rfw  # Uses RFWDataset with CSV splits
+train_split: 0.7  # Not used (handled by CSV splits)
+val_split: 0.15   # Not used (handled by CSV splits)
+num_frames: 8  # Number of frames for TimeSformer (8 or 16 recommended)
+frame_step: 4  # Step between frames in sequence (1=consecutive, 2=every other frame)
+
+# Inference settings
+inference_step: 4  # Step size for sliding window during inference
+                   # Example: num_frames=8, step=4 means overlap of 4 frames
+                   # This covers 32 frames with 4 sequences (1 second at 30fps)
+
+# Model settings
+model_name: TSM
+# pretrained_model: facebook/timesformer-base-finetuned-k400
+num_classes: 2  # Binary classification: nonviolence (0) vs violence (1)
+dropout: 0.3
+
+# Optimizer settings
+optimizer: adamw  # AdamW recommended for transformers
+lr: 0.0001 
+weight_decay: 0.01  # Weight decay for regularization
+clip_gradient: 1.0  # Gradient clipping to prevent exploding gradients
+
+# Scheduler settings
+scheduler: cosine  # Cosine annealing for smooth learning rate decay
+scheduler_step_size: 10  # Not used with cosine
+scheduler_gamma: 0.1  # Not used with cosine
+
+# Loss settings
+loss_type: crossentropy  # Use CrossEntropyLoss for binary classification
+
+# Image preprocessing
+img_size: 224  # TimeSformer expects 224x224 frames

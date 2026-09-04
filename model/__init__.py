@@ -4,7 +4,9 @@ from .ResNet3D.model import generate_model as generate_resnet3d_model
 from .TSM.ops.models import TSN
 from .TDN.ops.tdn_net import tdn_net
 from .TimeSformer.model import TimeSformerModel, get_timesformer_model
+from .X3D.X3D import X3DModel, get_model_x3d
 # from .TCM.TCM import TCM
+from .Adapter.adapter import MIL_MLP, MIL_LSTM, MIL_Conv1D, get_adapter
 
 def get_model(model_name, **kwargs):
     """
@@ -37,7 +39,7 @@ def get_model(model_name, **kwargs):
         # Return the generate_model function that needs options
         return generate_resnet3d_model
     
-    elif model_name == "TSN":
+    elif model_name == "TSM":
         num_class = kwargs.get('num_class', 400)
         num_segments = kwargs.get('num_segments', 8)
         modality = kwargs.get('modality', 'RGB')
@@ -67,6 +69,10 @@ def get_model(model_name, **kwargs):
     
     elif model_name == 'TimeSformer':
         return get_timesformer_model(**kwargs)
+    
+    elif model_name == 'X3D':
+        return get_model_x3d(**kwargs)
+    
     # elif model_name == "TCM":
     #     num_segments = kwargs.get('num_segments', 8)
     #     expansion = kwargs.get('expansion', 1)
@@ -79,4 +85,4 @@ def get_model(model_name, **kwargs):
     #     )
     
     else:
-        raise ValueError(f"Model {model_name} not recognized. Available models: I3D, ViolenceDetection, LSTM_CNN, ResNet3D, TSN, TDN, TCM")
+        raise ValueError(f"Model {model_name} not recognized. Available models: I3D, ViolenceDetection, LSTM_CNN, ResNet3D, TSN, TDN, TimeSformer, X3D")

@@ -1,0 +1,159 @@
+[2025-08-07 14:52:59] Starting training with parameters:
+[2025-08-07 14:52:59]   Mode: flow
+[2025-08-07 14:52:59]   Split file: data\precomputed_ensemble\split_info.csv
+[2025-08-07 14:52:59]   Validation split: 0.2
+[2025-08-07 14:52:59]   Batch size: 2
+[2025-08-07 14:52:59]   Num frames: 16
+[2025-08-07 14:52:59]   Device: cuda
+[2025-08-07 14:52:59]   Early stopping patience: 15
+[2025-08-07 14:52:59]   Loss function: bce_logits
+[2025-08-07 14:52:59]   Steps per validation: 64
+[2025-08-07 14:52:59]   Steps to log: 8
+[2025-08-07 14:52:59]   Warmup steps: 128
+[2025-08-07 14:52:59]   Resume checkpoint: None
+[2025-08-07 14:52:59]   Weight decay: 1e-05
+[2025-08-07 14:52:59]   Dropout rate: 0.5
+[2025-08-07 14:52:59]   Label smoothing: 0.0
+[2025-08-07 14:52:59]   Gradient clipping: 1.0
+[2025-08-07 14:52:59] Adding dropout with rate 0.5
+[2025-08-07 14:53:00] Freezing early layers...
+[2025-08-07 14:53:00]   Freezing: Conv3d_1a_7x7.conv3d.weight
+[2025-08-07 14:53:00]   Freezing: Conv3d_1a_7x7.bn.weight
+[2025-08-07 14:53:00]   Freezing: Conv3d_1a_7x7.bn.bias
+[2025-08-07 14:53:00]   Freezing: Conv3d_2b_1x1.conv3d.weight
+[2025-08-07 14:53:00]   Freezing: Conv3d_2b_1x1.bn.weight
+[2025-08-07 14:53:00]   Freezing: Conv3d_2b_1x1.bn.bias
+[2025-08-07 14:53:00]   Freezing: Conv3d_2c_3x3.conv3d.weight
+[2025-08-07 14:53:00]   Freezing: Conv3d_2c_3x3.bn.weight
+[2025-08-07 14:53:00]   Freezing: Conv3d_2c_3x3.bn.bias
+[2025-08-07 14:53:00]   Freezing: Mixed_3b.b0.conv3d.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_3b.b0.bn.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_3b.b0.bn.bias
+[2025-08-07 14:53:00]   Freezing: Mixed_3b.b1a.conv3d.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_3b.b1a.bn.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_3b.b1a.bn.bias
+[2025-08-07 14:53:00]   Freezing: Mixed_3b.b1b.conv3d.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_3b.b1b.bn.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_3b.b1b.bn.bias
+[2025-08-07 14:53:00]   Freezing: Mixed_3b.b2a.conv3d.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_3b.b2a.bn.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_3b.b2a.bn.bias
+[2025-08-07 14:53:00]   Freezing: Mixed_3b.b2b.conv3d.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_3b.b2b.bn.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_3b.b2b.bn.bias
+[2025-08-07 14:53:00]   Freezing: Mixed_3b.b3b.conv3d.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_3b.b3b.bn.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_3b.b3b.bn.bias
+[2025-08-07 14:53:00]   Freezing: Mixed_3c.b0.conv3d.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_3c.b0.bn.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_3c.b0.bn.bias
+[2025-08-07 14:53:00]   Freezing: Mixed_3c.b1a.conv3d.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_3c.b1a.bn.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_3c.b1a.bn.bias
+[2025-08-07 14:53:00]   Freezing: Mixed_3c.b1b.conv3d.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_3c.b1b.bn.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_3c.b1b.bn.bias
+[2025-08-07 14:53:00]   Freezing: Mixed_3c.b2a.conv3d.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_3c.b2a.bn.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_3c.b2a.bn.bias
+[2025-08-07 14:53:00]   Freezing: Mixed_3c.b2b.conv3d.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_3c.b2b.bn.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_3c.b2b.bn.bias
+[2025-08-07 14:53:00]   Freezing: Mixed_3c.b3b.conv3d.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_3c.b3b.bn.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_3c.b3b.bn.bias
+[2025-08-07 14:53:00]   Freezing: Mixed_4b.b0.conv3d.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4b.b0.bn.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4b.b0.bn.bias
+[2025-08-07 14:53:00]   Freezing: Mixed_4b.b1a.conv3d.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4b.b1a.bn.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4b.b1a.bn.bias
+[2025-08-07 14:53:00]   Freezing: Mixed_4b.b1b.conv3d.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4b.b1b.bn.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4b.b1b.bn.bias
+[2025-08-07 14:53:00]   Freezing: Mixed_4b.b2a.conv3d.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4b.b2a.bn.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4b.b2a.bn.bias
+[2025-08-07 14:53:00]   Freezing: Mixed_4b.b2b.conv3d.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4b.b2b.bn.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4b.b2b.bn.bias
+[2025-08-07 14:53:00]   Freezing: Mixed_4b.b3b.conv3d.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4b.b3b.bn.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4b.b3b.bn.bias
+[2025-08-07 14:53:00]   Freezing: Mixed_4c.b0.conv3d.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4c.b0.bn.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4c.b0.bn.bias
+[2025-08-07 14:53:00]   Freezing: Mixed_4c.b1a.conv3d.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4c.b1a.bn.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4c.b1a.bn.bias
+[2025-08-07 14:53:00]   Freezing: Mixed_4c.b1b.conv3d.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4c.b1b.bn.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4c.b1b.bn.bias
+[2025-08-07 14:53:00]   Freezing: Mixed_4c.b2a.conv3d.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4c.b2a.bn.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4c.b2a.bn.bias
+[2025-08-07 14:53:00]   Freezing: Mixed_4c.b2b.conv3d.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4c.b2b.bn.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4c.b2b.bn.bias
+[2025-08-07 14:53:00]   Freezing: Mixed_4c.b3b.conv3d.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4c.b3b.bn.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4c.b3b.bn.bias
+[2025-08-07 14:53:00]   Freezing: Mixed_4d.b0.conv3d.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4d.b0.bn.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4d.b0.bn.bias
+[2025-08-07 14:53:00]   Freezing: Mixed_4d.b1a.conv3d.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4d.b1a.bn.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4d.b1a.bn.bias
+[2025-08-07 14:53:00]   Freezing: Mixed_4d.b1b.conv3d.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4d.b1b.bn.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4d.b1b.bn.bias
+[2025-08-07 14:53:00]   Freezing: Mixed_4d.b2a.conv3d.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4d.b2a.bn.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4d.b2a.bn.bias
+[2025-08-07 14:53:00]   Freezing: Mixed_4d.b2b.conv3d.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4d.b2b.bn.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4d.b2b.bn.bias
+[2025-08-07 14:53:00]   Freezing: Mixed_4d.b3b.conv3d.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4d.b3b.bn.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4d.b3b.bn.bias
+[2025-08-07 14:53:00]   Freezing: Mixed_4e.b0.conv3d.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4e.b0.bn.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4e.b0.bn.bias
+[2025-08-07 14:53:00]   Freezing: Mixed_4e.b1a.conv3d.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4e.b1a.bn.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4e.b1a.bn.bias
+[2025-08-07 14:53:00]   Freezing: Mixed_4e.b1b.conv3d.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4e.b1b.bn.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4e.b1b.bn.bias
+[2025-08-07 14:53:00]   Freezing: Mixed_4e.b2a.conv3d.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4e.b2a.bn.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4e.b2a.bn.bias
+[2025-08-07 14:53:00]   Freezing: Mixed_4e.b2b.conv3d.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4e.b2b.bn.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4e.b2b.bn.bias
+[2025-08-07 14:53:00]   Freezing: Mixed_4e.b3b.conv3d.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4e.b3b.bn.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4e.b3b.bn.bias
+[2025-08-07 14:53:00]   Freezing: Mixed_4f.b0.conv3d.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4f.b0.bn.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4f.b0.bn.bias
+[2025-08-07 14:53:00]   Freezing: Mixed_4f.b1a.conv3d.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4f.b1a.bn.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4f.b1a.bn.bias
+[2025-08-07 14:53:00]   Freezing: Mixed_4f.b1b.conv3d.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4f.b1b.bn.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4f.b1b.bn.bias
+[2025-08-07 14:53:00]   Freezing: Mixed_4f.b2a.conv3d.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4f.b2a.bn.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4f.b2a.bn.bias
+[2025-08-07 14:53:00]   Freezing: Mixed_4f.b2b.conv3d.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4f.b2b.bn.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4f.b2b.bn.bias
+[2025-08-07 14:53:00]   Freezing: Mixed_4f.b3b.conv3d.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4f.b3b.bn.weight
+[2025-08-07 14:53:00]   Freezing: Mixed_4f.b3b.bn.bias
+[2025-08-07 14:53:00] Trainable/Total: 4761058/12267362
+[2025-08-07 14:53:00] Dataset loaded with train-val-test split:
+[2025-08-07 14:53:00]   Training samples: 32
+[2025-08-07 14:53:00]   Validation samples: 8
+[2025-08-07 14:53:00]   Test samples: 10

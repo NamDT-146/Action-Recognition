@@ -1,0 +1,58 @@
+# Configuration for X3D model on RWF-2000 Violence Detection dataset
+
+# Experiment settings
+experiment_name: x3d_rfw_violence_detection
+save_dir: ./checkpoints
+save_name: x3d_rfw_violence
+resume: False
+load_path: ./checkpoints/x3d_rfw_violence/latest_model.pth
+mlflow_timeout: 5
+
+# Training settings
+epochs: 50
+batch_size: 8  # X3D is memory efficient
+num_workers: 4
+seed: 42
+gpu: 0
+
+# Dataset settings
+data_dir: /home/atin-ct3/action_recognition/data/RFW-2000-cleaned
+dataset: rfw
+train_split: 0.7
+val_split: 0.15
+num_frames: 16  # X3D typically uses 16 frames
+frame_step: 2  # Step between frames
+inference_step: 8  # Step size for sliding window during inference
+
+# Model settings
+model_name: X3D
+model_variant: x3d_m  # Options: x3d_xs, x3d_s, x3d_m, x3d_l
+num_classes: 2  # Binary classification
+pretrained: True  # Load Kinetics-400 pretrained weights
+dropout: 0.5
+num_layers_to_freeze: 5  # Freeze first N blocks (0-5)
+                         # 5 = freeze all blocks except final layer (default, recommended for transfer learning)
+                         # 4 = freeze first 4 blocks, train blocks 4-5
+                         # 3 = freeze first 3 blocks, train blocks 3-5
+                         # 0 = train all blocks (use when dataset is large)
+
+# Fine-tuning settings
+warmup_epochs: 0  # Set to >0 if using transfer learning
+reset_optimizer_after_warmup: False
+
+# Optimizer settings
+optimizer: adamw
+lr: 0.0001  # 1e-4
+weight_decay: 0.01
+clip_gradient: 1.0
+
+# Scheduler settings
+scheduler: cosine
+scheduler_step_size: 10
+scheduler_gamma: 0.1
+
+# Loss settings
+loss_type: crossentropy
+
+# Image preprocessing
+img_size: 224  # X3D expects 224x224 frames
